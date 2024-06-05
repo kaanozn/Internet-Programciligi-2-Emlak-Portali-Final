@@ -1,0 +1,349 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_admin.cshtml";
+}
+
+
+    <h1 class="mb-4">Ev İşlemleri</h1>
+    <div id="divResult" class="alert" style="display: none;"></div>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Id</th>
+                            <th>Ev Başlığı Adı</th>
+                            <th>Adres</th>
+                            <th>Oda Sayısı</th>
+                            <th>Kat Sayısı</th>
+                            <th>Metre Kare</th>
+                            <th>Fiyat</th>
+                            <th>Açıklama</th>
+                            <th>İl</th>
+                            <th>İlçe</th>
+                            <th>Resim İd</th>
+                            <th>Kullanici İd</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="urunlistesi">
+                        <!-- Dynamic content will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    Ev Ekle
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Bir Resim İd Sadece 1 tane product Sahip olabilir!</p>
+                    <form id="kategoriForm">
+                        <div class="form-group">
+                            <label for="name">Başlık</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Ev Başlığı Giriniz ">
+                        </div>
+                        <div class="form-group">
+                            <label for="address">Adresi</label>
+                            <input type="text" class="form-control" id="address" name="address" placeholder="Adresi giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="roomCount">Oda Sayısı</label>
+                        <input type="text" class="form-control" id="roomCount" name="roomCount" placeholder="Oda Sayısını giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="flourCount">Kat Sayısı</label>
+                        <input type="text" class="form-control" id="flourCount" name="flourCount" placeholder="Kat Sayısını giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="area">metre kare</label>
+                            <input type="text" class="form-control" id="area" name="area" placeholder="Metre Kare Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="price">Fiyat</label>
+                            <input type="text" class="form-control" id="price" name="price" placeholder="Fiyat Giriniz">
+                        </div>
+                       
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <input type="text" class="form-control" id="description" name="description" placeholder="Açıklama Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="districtList">İl Seçin</label>
+                            <select class="form-control" id="districtList">
+                                <option value="">İl Seçin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="provinceList">İlçe Seçin</label>
+                            <select class="form-control" id="provinceList">
+                                <option value="">İlçe Seçin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="resimListesi">Resim Id Seçin</label>
+                            <select class="form-control" id="resimListesi">
+                                <option value="">Resim Seçin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="userList">Kullanıcı Seçin</label>
+                            <select class="form-control" id="userList">
+                                <option value="">Kullanıcı Seçin</option>
+                            </select>
+                        </div>
+                      
+                        <button id="ekle" class="btn btn-primary mt-3">Kaydet</button>
+                        <button id="guncelle" class="btn btn-dark mt-3" style="display: none;">Güncelle</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        listele();
+        resimlistele();
+        illistele(); // Load provinces on page load
+        ilcelistele(); // Load districts on page load
+        kulllistele();
+
+        $("#kategoriForm").submit(function (e) {
+            e.preventDefault();
+
+            alert("Ekleniyor");
+            ekle();
+
+        });
+    });
+
+    var selectedCategoryId = null;
+    var baseurl = "http://localhost:1234/";
+    var gettoken = localStorage.getItem("token");
+
+    function listele() {
+        $.ajax({
+            type: "GET",
+            url: baseurl + "api/Houses",
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + gettoken
+            },
+            success: function (response) {
+                console.log(response);
+                var html = "";
+                $.each(response, function (index, item) {
+                    html += "<tr>";
+                    html += "<td>" + item.id + "</td>";
+                    html += "<td>" + item.name + "</td>";
+                    html += "<td>" + item.address + "</td>";
+                    html += "<td>" + item.roomCount + "</td>";
+                    html += "<td>" + item.floorCount + "</td>";
+                    html += "<td>" + item.area + "</td>";
+                    html += "<td>" + item.price + "</td>";
+                    html += "<td>" + item.description + "</td>";
+                    html += "<td>" + item.provinceId + "</td>";
+                    html += "<td>" + item.districtId + "</td>";
+                    html += "<td>" + item.houseImagesId + "</td>";
+                    html += "<td>" + item.appUserId + "</td>";
+                    html += "<td>";
+                    html += "<button class='btn btn-danger' onclick='sil(\"" + item.id + "\")'>Sil</button>";
+                    html += "</td>";
+                    html += "</tr>";
+                });
+                $("#urunlistesi").html(html);
+            },
+            error: function (xhr, status, error) {
+
+            }
+        });
+    }
+
+    function sil(id) {
+        $.ajax({
+            type: "DELETE",
+            url: baseurl + "api/Houses/" + id,
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + gettoken
+            },
+            success: function (response) {
+                console.log(response);
+                listele(); // Refresh the list after deletion
+                $("#divResult")
+                    .show()
+                    .removeClass()
+                    .addClass("alert alert-success")
+                    .html("Silme Başarılı")
+                    .fadeOut(5000);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    }
+
+    function ekle() {
+        var houseDto = {
+
+            name: $("#name").val(),
+            address: $("#address").val(),
+            roomCount: parseInt($("#roomCount").val()),
+            floorCount: parseInt($("#flourCount").val()),
+            area: parseFloat($("#area").val()),
+            price: parseFloat($("#price").val()),
+            houseImagesId: $("#resimListesi").val(),
+            AppUserId: $("#userList").val(),
+            DistrictId: $("#districtList").val(),
+            ProvinceId: $("#provinceList").val(),
+            description: $("#description").val()
+        };
+        console.log(houseDto);
+        $.ajax({
+            type: "POST",
+            url: baseurl + "api/Houses",
+            contentType: "application/json",
+            data: JSON.stringify(houseDto),
+            headers: {
+                "Authorization": "Bearer " + gettoken
+            },
+            success: function (response) {
+                console.log(response);
+                $("#kategoriForm")[0].reset(); // Reset the form
+                listele(); // Refresh the list
+                $("#divResult")
+                    .show()
+                    .removeClass()
+                    .addClass("alert alert-success")
+                    .html("Kayıt Başarılı")
+                    .fadeOut(5000);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    }
+    function illistele() {
+        $.ajax({
+            type: "GET",
+            url: baseurl + "api/Provinces",
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + gettoken
+            },
+            success: function (response) {
+                // console.log("Response received:", response);
+                var $provinceList = $("#provinceList");
+                if ($provinceList.length === 0) {
+                    console.error("#provinceList element not found.");
+                    return;
+                }
+                $provinceList.empty(); // Clear existing options
+                $provinceList.append("<option value=''>İl Seçin</option>");
+                $.each(response, function (index, item) {
+                    $provinceList.append("<option value='" + item.id + "'>" + item.name + "</option>");
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    }
+
+    function ilcelistele() {
+        $.ajax({
+            type: "GET",
+            url: baseurl + "api/Districts",
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + gettoken
+            },
+            success: function (response) {
+                // console.log("Response received:", response);
+                var $districtList = $("#districtList");
+                if ($districtList.length === 0) {
+                    console.error("#districtList element not found.");
+                    return;
+                }
+                $districtList.empty(); // Clear existing options
+                $districtList.append("<option value=''>İlçe Seçin</option>");
+                $.each(response, function (index, item) {
+                    $districtList.append("<option value='" + item.id + "'>" + item.name + "</option>");
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    }
+    function kulllistele() {
+        $.ajax({
+            type: "GET",
+            url: baseurl + "api/User/UserList",
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + gettoken
+            },
+            success: function (response) {
+                console.log("Response received:", response);
+                var $userList = $("#userList");
+                if ($userList.length === 0) {
+                    console.error("#userList element not found.");
+                    return;
+                }
+                $userList.empty(); // Clear existing options
+                $userList.append("<option value=''>Kullanıcı  Seçin</option>");
+                $.each(response, function (index, item) {
+                    $userList.append("<option value='" + item.id + "'>" + item.fullName + "</option>");
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    }
+
+
+    function resimlistele() {
+        $.ajax({
+            type: "GET",
+            url: baseurl + "api/HouseImages",
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + gettoken
+            },
+            success: function (response) {
+
+                // console.log("Response received:", response);
+                var $resimListesi = $("#resimListesi");
+                if ($resimListesi.length === 0) {
+                    console.error("#kategoriListesi element not found.");
+                    return;
+                }
+                $resimListesi.empty(); // Clear existing options
+                $resimListesi.append("<option value=''>Resim Seçin</option>");
+                $.each(response, function (index, item) {
+                    // console.log("Appending item:", item);
+                    $resimListesi.append("<option value='" + item.id + "'>" + item.id + "</option>");
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error: " + status + " " + error);
+            }
+        });
+    }
+
+
+    
+
+
+
+
+
+</script>

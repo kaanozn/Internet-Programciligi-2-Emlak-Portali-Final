@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
+<div class="row">
+    <div class="col-md-4">
+
+    </div>
+    <div class="col-md-4">
+        <h1>İlandaki Evlermiz</h1>
+    </div>
+    <div class="col-md-4">
+    </div>
+</div>
+
+
+
+<div class="row row-cols-1 row-cols-md-3 g-4" id="urunListesi">
+    <!-- Dinamik içerik buraya yüklenecek -->
+</div>
+
+
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+@* <script src="~/jsajax/deneme.js"></script> *@
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        listele();
+    });
+
+    const baseurl = "http://localhost:1234/";
+    const gettoken = localStorage.getItem("token");
+
+    async function listele() {
+        try {
+            const response = await fetch(baseurl + "api/Houses/GetDetailList", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + gettoken
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(data);
+
+            let html = "";
+            data.forEach(item => {
+                html += `
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="slick-slider">
+                            <img src="${item.houseImages.image1}" class="card-img-top" alt="${item.name}">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${item.name}</h5>
+                            <p class="card-text">Oda Sayısı: ${item.roomCount}</p>
+                            <p class="card-text">Kat Sayısı: ${item.floorCount}</p>
+                            <p class="card-text">Fiyat: ${item.price}₺</p>
+                            <p class="card-text">İl: ${item.district.name}</p>
+                            <p class="card-text">İlçe: ${item.province.name}</p>
+                            <p class="card-text">Kullanıcı Adı: ${item.appUser.userName}</p>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            document.getElementById("urunListesi").innerHTML = html;
+
+            // Slick slider'ı etkinleştirme
+            $('.slick-slider').slick({
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: 2000,
+                dots: true,
+                arrows: false
+            });
+
+        } catch (error) {
+            console.error("Error: ", error);
+        }
+    }
+</script>
